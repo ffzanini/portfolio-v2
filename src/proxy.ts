@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+/** Bots que devem ser bloqueados na borda (403) para não consumir edge requests. Alinhado ao robots.ts. */
+const BLOCKED_BOT_PATTERNS = [
+  /\bgptbot\b/i,
+  /\bchatgpt-user\b/i,
+  /\bccbot\b/i,
+  /\banthropic-ai\b/i,
+  /\bclaudebot\b/i,
+  /\bcohere-ai\b/i,
+];
+
 const BAD_USER_AGENT_PATTERNS = [
   /\bsqlmap\b/i,
   /\bnikto\b/i,
@@ -37,6 +47,14 @@ const ALLOWED_BOT_PREFIXES = [
   "next",
 ];
 
+const FORBIDDEN_HEADERS = {
+  "Cache-Control": "public, max-age=3600, s-maxage=3600",
+};
+
+function isBlockedBot(ua: string): boolean {
+  return BLOCKED_BOT_PATTERNS.some((pattern) => pattern.test(ua));
+}
+
 function isAllowedBot(ua: string): boolean {
   const lower = ua.toLowerCase();
   return ALLOWED_BOT_PREFIXES.some((prefix) => lower.includes(prefix));
@@ -51,12 +69,10 @@ function isBadUserAgent(ua: string | null): boolean {
 export function proxy(request: NextRequest) {
   const ua = request.headers.get("user-agent") ?? "";
 
-  if (isBadUserAgent(ua)) {
+  if (isBlockedBot(ua) || isBadUserAgent(ua)) {
     return new NextResponse(null, {
       status: 403,
-      headers: {
-        "Cache-Control": "public, max-age=3600, s-maxage=3600",
-      },
+      headers: FORBIDDEN_HEADERS,
     });
   }
 
