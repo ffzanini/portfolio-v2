@@ -39,7 +39,7 @@ function ContactForm() {
   const onSubmit = handleSubmit(({ name, email, message }) => {
     toast.promise(
       axios
-        .post('api/contact', {
+        .post('/api/contact', {
           name,
           email,
           message,

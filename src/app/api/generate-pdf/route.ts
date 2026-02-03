@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import puppeteer from 'puppeteer'
 
 export async function POST(req: NextRequest) {
+  let browser: Awaited<ReturnType<typeof puppeteer.launch>> | null = null
+
   try {
     const { url, language } = await req.json()
 
@@ -12,7 +14,15 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const browser = await puppeteer.launch()
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
+    })
 
     const page = await browser.newPage()
 
@@ -49,9 +59,9 @@ export async function POST(req: NextRequest) {
       margin: { top: '10mm', bottom: '10mm' },
     })
 
-    await browser.close()
+    await page.close().catch(() => {})
 
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
@@ -64,5 +74,7 @@ export async function POST(req: NextRequest) {
       { message: 'Internal Server Error' },
       { status: 500 },
     )
+  } finally {
+    if (browser) await browser.close().catch(() => {})
   }
 }

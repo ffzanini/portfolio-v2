@@ -94,11 +94,32 @@ export default function Resume() {
               <p>{translations.resume.icos.mail}</p>
             </div>
           </motion.a>
+          {/* Download estático: zero Edge/Serverless; gere os PDFs com npm run generate-pdfs */}
+          <a
+            href="/resume-pt.pdf"
+            download="resume-pt.pdf"
+            className="no-print flex flex-row gap-1 items-center font-extrabold opacity-100 hover:opacity-80"
+          >
+            <RiFileCopy2Line className="icon-body" />
+            <p>{translations.resume.icos.pdf_click} (PT)</p>
+          </a>
+          <a
+            href="/resume-en.pdf"
+            download="resume-en.pdf"
+            className="no-print flex flex-row gap-1 items-center font-extrabold opacity-100 hover:opacity-80"
+          >
+            <RiFileCopy2Line className="icon-body" />
+            <p>{translations.resume.icos.pdf_click} (EN)</p>
+          </a>
           <button
+            type="button"
             onClick={handleGeneratePDF}
             disabled={loading}
-            className="no-print"
-          ></button>
+            className="no-print flex flex-row gap-1 items-center font-extrabold opacity-100 hover:opacity-80 disabled:opacity-50"
+          >
+            <RiFileCopy2Line className="icon-body" />
+            <p>{loading ? translations.resume.icos.pdf_loading : `${translations.resume.icos.pdf_click} (${location})`}</p>
+          </button>
           <button onClick={copyToClipboard} className="no-print">
             <div className="flex flex-row gap-1 items-center font-extrabold opacity-100 hover:opacity-80">
               <RiFileCopy2Line className="icon-body" />
